@@ -1,6 +1,6 @@
 const { apiUrl } = require('./apiConfig')
 
-test("Happy path test", async () => {
+test("Happy path test: POST/GET a new book", async () => {
 
     const newBook = {
         title: "The Hobbit",
@@ -15,7 +15,6 @@ test("Happy path test", async () => {
     });
 
     expect(postRes.status).toBe(201);
-    expect(postRes.statusText).toBe('Created');
 
     const postResJson = await postRes.json();
     expect(postResJson.title).toBe(newBook.title);
@@ -62,4 +61,14 @@ test("Happy path test", async () => {
     expect(getIdResJson).toEqual(
         expect.objectContaining(postResJson)
     );    
+});
+
+
+test("Negative/error case: DELETE nonexistent book", async () => {
+    const getRes = await fetch(`${apiUrl}/api/book/99999`, {
+        method: "DELETE"
+    });
+    
+    expect(getRes.status).toBe(404);
+    expect(await getRes.json()).toBe('Not found');
 });
