@@ -19,6 +19,9 @@
   },
   "homepage": "https://github.com/aaevans03/BookBazaarTests#readme",
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.2.0",
+    "globals": "^17.4.0",
     "jest": "^30.3.0"
   }
 }
