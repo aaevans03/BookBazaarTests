@@ -63,6 +63,25 @@ test("Happy path test: POST/GET a new book", async () => {
     );    
 });
 
+// Unfortunately, an object of any format sent to `mockapi.io` is added to their database. This test fails with `mockapi.io`
+test("Edge/validation case: POST with invalid format", async () => {
+    
+    // newBook missing a title
+    const newBook = {
+        "author": "Bob the Builder",
+    }
+
+    const postRes = await fetch(`${apiUrl}/api/books`, {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json', },
+        body: JSON.stringify(newBook),
+    });
+
+    expect(postRes.status).toBe(400);
+    expect(await postRes.json()).toBe('Invalid request');
+
+});
+
 
 test("Negative/error case: DELETE nonexistent book", async () => {
     const getRes = await fetch(`${apiUrl}/api/book/99999`, {
