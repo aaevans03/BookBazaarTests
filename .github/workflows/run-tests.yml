@@ -22,6 +22,12 @@ jobs:
       
       - name: Install dependencies
         run: npm ci
+
+      - name: Write API config file
+        run: |
+          echo "module.exports = {
+            apiUrl: '${{ secrets.MOCK_API_URL }}'
+          };" > apiConfig.js
       
       - name: Run tests
         run: npm test
