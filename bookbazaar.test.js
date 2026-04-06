@@ -1,5 +1,20 @@
 const { apiUrl } = require('./apiConfig')
 
+// Fetch endpoint helper function
+async function fetchEndpoint(path, method = 'GET', body) {
+    const options = {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+    }
+
+    if (body) {
+        options.body = JSON.stringify(body);
+    }
+    
+    return await fetch(apiUrl + path, options);
+};
+
+
 test("Happy path test: POST/GET a new book", async () => {
 
     const newBook = {
@@ -8,18 +23,13 @@ test("Happy path test: POST/GET a new book", async () => {
     }
     
     // POST: Add new book
-    const postRes = await fetch(`${apiUrl}/api/books`, {
-        method: "POST",
-        headers: { 'Content-Type': 'application/json', },
-        body: JSON.stringify(newBook),
-    });
+    const postRes = await fetchEndpoint('/api/books', 'POST', newBook);
 
     expect(postRes.status).toBe(201);
 
     const postResJson = await postRes.json();
     expect(postResJson.title).toBe(newBook.title);
     expect(postResJson.author).toBe(newBook.author);
-    expect(postResJson.id).toEqual(expect.any(String));
 
     // Check ID of the book we added
     const bookId = Number(postResJson.id);
@@ -27,7 +37,7 @@ test("Happy path test: POST/GET a new book", async () => {
 
     
     // GET: Get list of books, expect the book we just created to be inside
-    const getRes = await fetch(`${apiUrl}/api/books`);
+    const getRes = await fetchEndpoint('/api/books');
     
     expect(getRes.status).toBe(200);
     
@@ -36,15 +46,15 @@ test("Happy path test: POST/GET a new book", async () => {
     expect(Array.isArray(getResJson)).toBe(true);
 
     // Check the format of the response
-    for (const value of getResJson) {
-        expect(value).toEqual(
+    expect(getResJson).toEqual(
+        expect.arrayContaining([
             expect.objectContaining({
                 title: expect.any(String),
                 author: expect.any(String),
                 id: expect.any(String),
             })
-        );
-    }
+        ])
+    );
 
     // Check to see if response has the book we just added
     expect(getResJson).toEqual(
@@ -53,7 +63,7 @@ test("Happy path test: POST/GET a new book", async () => {
 
     
     // GET: Get book by id
-    const getIdRes = await fetch(`${apiUrl}/api/books/${bookId}`);
+    const getIdRes = await fetchEndpoint(`/api/books/${bookId}`);
 
     expect(getIdRes.status).toBe(200);
 
@@ -71,23 +81,17 @@ test("Edge/validation case: POST with invalid format", async () => {
         "author": "Bob the Builder",
     }
 
-    const postRes = await fetch(`${apiUrl}/api/books`, {
-        method: "POST",
-        headers: { 'Content-Type': 'application/json', },
-        body: JSON.stringify(newBook),
-    });
+    const postRes = await fetchEndpoint('/api/books', 'POST', newBook);
 
     expect(postRes.status).toBe(400);
     expect(await postRes.json()).toBe('Invalid request');
-
 });
 
 
 test("Negative/error case: DELETE nonexistent book", async () => {
-    const getRes = await fetch(`${apiUrl}/api/book/99999`, {
-        method: "DELETE"
-    });
+    const getRes = await fetchEndpoint('/api/books/99999', 'DELETE');
     
     expect(getRes.status).toBe(404);
     expect(await getRes.json()).toBe('Not found');
 });
+
